@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whack-a-Mole</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS for the game elements */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0; /* Light grey background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Full viewport height */
+            margin: 0;
+            overflow: hidden; /* Prevent scrolling */
+        }
+
+        .game-container {
+            background-color: #a0522d; /* Sienna brown for the 'ground' */
+            border-radius: 20px; /* Rounded corners for the game area */
+            padding: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Soft shadow */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%; /* Responsive width */
+            max-width: 600px; /* Max width for larger screens */
+            position: relative;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+            color: white;
+            font-size: 1.25rem; /* Larger font for info */
+            font-weight: bold;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 columns */
+            gap: 15px; /* Space between holes */
+            width: 100%;
+        }
+
+        .hole {
+            background-color: #5a3e2b; /* Darker brown for holes */
+            width: 100%;
+            padding-bottom: 100%; /* Creates a square hole */
+            border-radius: 50%; /* Circular holes */
+            position: relative;
+            overflow: hidden; /* Hide mole when it's down */
+            border: 5px solid #8b4513; /* SaddleBrown border */
+            box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.5); /* Inner shadow for depth */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hammer"><path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0-.83-.83-.83-2.17 0-3L12 9"/><path d="m18 11-1.5-7.5L2 6l1.5 7.5L18 11Z"/><path d="m21 15 1.5 1.5c.83.83.83 2.17 0 3 0 0 0 0 0 0-.83.83-2.17.83-3 0L15 18"/></svg>') 16 16, auto; /* Hammer cursor */
+        }
+
+        .mole {
+            position: absolute;
+            bottom: -100%; /* Start hidden below the hole */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%; /* Mole size relative to hole */
+            height: 80%;
+            background-color: #8b4513; /* SaddleBrown for mole body */
+            border-radius: 50% 50% 0 0; /* Mole head shape */
+            transition: bottom 0.2s ease-out; /* Smooth pop-up animation */
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            font-size: 3rem; /* Emoji size */
+            line-height: 1;
+            padding-bottom: 10%; /* Adjust emoji position */
+        }
+
+        .mole.up {
+            bottom: 0; /* Mole pops up */
+        }
+
+        .start-button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+        }
+
+        .start-button:hover {
+            background-color: #45a049; /* Darker green on hover */
+            transform: translateY(-2px); /* Slight lift on hover */
+        }
+
+        .start-button:active {
+            transform: translateY(0); /* Press effect */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-over-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            display: none; /* Hidden by default */
+            z-index: 10;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        .game-over-message button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .game-over-message button:hover {
+            background-color: #0056b3;
+        }
+
+        /* High Score Board Styling */
+        .high-scores-container {
+            background-color: #f8f8f8; /* Light background for scores */
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .high-scores-container h2 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .high-scores-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .high-scores-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        .high-scores-list li:last-child {
+            border-bottom: none;
+        }
+
+        .high-scores-list li .name {
+            font-weight: bold;
+            color: #222;
+        }
+
+        /* Loading indicator for Firebase */
+        .loading-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: #333;
+            z-index: 20;
+            border-radius: 20px;
+            display: none; /* Hidden by default */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .game-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2 columns on smaller screens */
+            }
+            .game-info {
+                font-size: 1rem;
+            }
+            .start-button {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            .game-over-message {
+                font-size: 1.5rem;
+                padding: 20px;
+            }
+            .high-scores-container {
+                padding: 15px;
+            }
+            .high-scores-container h2 {
+                font-size: 1.5rem;
+            }
+            .high-scores-list li {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-grid {
+                grid-template-columns: repeat(2, 1fr); /* Still 2 columns, but moles might be larger relative to screen */
+                gap: 10px;
+            }
+            .hole {
+                border-width: 3px;
+            }
+            .mole {
+                font-size: 2.5rem;
+            }
+            .game-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="loading-indicator" id="loadingIndicator">
+            Loading game...
+        </div>
+
+        <div class="game-info">
+            <div id="score">Score: 0</div>
+            <div id="time">Time: 30</div>
+        </div>
+
+        <div class="game-grid" id="gameGrid">
+            </div>
+
+        <button class="start-button" id="startButton">Start Game</button>
+
+        <div class="game-over-message" id="gameOverMessage">
+            Game Over!
+            <div id="finalScore">Your Score: 0</div>
+            <button id="restartButton">Play Again</button>
+        </div>
+
+        <div class="high-scores-container">
+            <h2>High Scores</h2>
+            <ul class="high-scores-list" id="highScoresList">
+                </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables for Firebase and game state
+        let app;
+        let db;
+        let auth;
+        let userId;
+        let isAuthReady = false;
+
+        let score = 0;
+        let time = 30; // Game duration in seconds
+        let gameInterval;
+        let molePopInterval;
+        let lastHole;
+        let gameActive = false;
+        const holes = document.querySelectorAll('.hole');
+        const scoreDisplay = document.getElementById('score');
+        const timeDisplay = document.getElementById('time');
+        const startButton = document.getElementById('startButton');
+        const gameOverMessage = document.getElementById('gameOverMessage');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const restartButton = document.getElementById('restartButton');
+        const gameGrid = document.getElementById('gameGrid');
+        const highScoresList = document.getElementById('highScoresList');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        // --- Firebase Initialization and Authentication ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        /**
+         * Initializes Firebase and authenticates the user.
+         */
+        async function initializeFirebase() {
+            loadingIndicator.style.display = 'flex'; // Show loading indicator
+            try {
+                if (Object.keys(firebaseConfig).length > 0) {
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+
+                    onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            userId = user.uid;
+                            console.log("Firebase Auth Ready. User ID:", userId);
+                        } else {
+                            // If no user, sign in anonymously
+                            try {
+                                if (initialAuthToken) {
+                                    await signInWithCustomToken(auth, initialAuthToken);
+                                    userId = auth.currentUser.uid;
+                                    console.log("Signed in with custom token. User ID:", userId);
+                                } else {
+                                    await signInAnonymously(auth);
+                                    userId = auth.currentUser.uid;
+                                    console.log("Signed in anonymously. User ID:", userId);
+                                }
+                            } catch (error) {
+                                console.error("Firebase Anonymous Sign-in failed:", error);
+                                // Fallback to a random ID if auth fails completely
+                                userId = crypto.randomUUID();
+                                console.log("Using random UUID as userId:", userId);
+                            }
+                        }
+                        isAuthReady = true;
+                        loadingIndicator.style.display = 'none'; // Hide loading indicator
+                        setupGame(); // Setup game after auth is ready
+                        listenForHighScores(); // Start listening for high scores
+                    });
+                } else {
+                    console.warn("Firebase config not provided. Running without Firestore persistence.");
+                    userId = crypto.randomUUID(); // Use a random ID if no Firebase config
+                    isAuthReady = true;
+                    loadingIndicator.style.display = 'none'; // Hide loading indicator
+                    setupGame(); // Setup game even without Firebase
+                }
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                userId = crypto.randomUUID(); // Fallback to a random ID if init fails
+                isAuthReady = true;
+                loadingIndicator.style.display = 'none'; // Hide loading indicator
+                setupGame(); // Setup game even if Firebase init fails
+            }
+        }
+
+        // --- Game Setup and Logic ---
+
+        /**
+         * Creates the mole holes dynamically.
+         */
+        function createHoles() {
+            gameGrid.innerHTML = ''; // Clear existing holes
+            for (let i = 0; i < 9; i++) { // Create 9 holes
+                const holeDiv = document.createElement('div');
+                holeDiv.classList.add('hole');
+                holeDiv.setAttribute('data-index', i);
+
+                const moleDiv = document.createElement('div');
+                moleDiv.classList.add('mole');
+                moleDiv.innerHTML = '🦔'; // Use a hedgehog emoji for the mole
+                holeDiv.appendChild(moleDiv);
+
+                gameGrid.appendChild(holeDiv);
+            }
+        }
+
+        /**
+         * Gets a random time for the mole to appear.
+         * @param {number} min - Minimum time in milliseconds.
+         * @param {number} max - Maximum time in milliseconds.
+         * @returns {number} Random time.
+         */
+        function randomTime(min, max) {
+            return Math.round(Math.random() * (max - min) + min);
+        }
+
+        /**
+         * Gets a random hole element.
+         * @param {HTMLElement[]} holesArray - Array of hole elements.
+         * @returns {HTMLElement} A random hole element.
+         */
+        function randomHole(holesArray) {
+            const idx = Math.floor(Math.random() * holesArray.length);
+            const hole = holesArray[idx];
+            if (hole === lastHole) {
+                return randomHole(holesArray); // Avoid the same hole twice in a row
+            }
+            lastHole = hole;
+            return hole;
+        }
+
+        /**
+         * Makes a mole pop up from a random hole.
+         */
+        function peep() {
+            if (!gameActive) return; // Stop peeping if game is not active
+
+            const holesArray = Array.from(document.querySelectorAll('.hole')); // Get current holes
+            const timeToPop = randomTime(500, 1500); // Mole stays up for 0.5 to 1.5 seconds
+            const hole = randomHole(holesArray);
+            const mole = hole.querySelector('.mole');
+
+            if (mole) {
+                mole.classList.add('up');
+                setTimeout(() => {
+                    mole.classList.remove('up');
+                    if (gameActive) {
+                        peep(); // Continue peeping if game is active
+                    }
+                }, timeToPop);
+            }
+        }
+
+        /**
+         * Starts the game timer.
+         */
+        function startGameTimer() {
+            time = 30; // Reset time
+            timeDisplay.textContent = `Time: ${time}`;
+            gameInterval = setInterval(() => {
+                time--;
+                timeDisplay.textContent = `Time: ${time}`;
+                if (time <= 0) {
+                    clearInterval(gameInterval);
+                    clearInterval(molePopInterval);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        /**
+         * Handles a mole being whacked.
+         * @param {Event} e - The click event.
+         */
+        function whack(e) {
+            if (!e.isTrusted || !gameActive) return; // Prevent cheating and ensure game is active
+            if (e.target.classList.contains('mole') && e.target.classList.contains('up')) {
+                score++;
+                scoreDisplay.textContent = `Score: ${score}`;
+                e.target.classList.remove('up'); // Hide the mole immediately
+            }
+        }
+
+        /**
+         * Starts the game.
+         */
+        function startGame() {
+            if (gameActive) return; // Prevent starting if already active
+
+            score = 0;
+            scoreDisplay.textContent = `Score: ${score}`;
+            gameOverMessage.style.display = 'none';
+            startButton.style.display = 'none';
+            gameActive = true;
+
+            startGameTimer();
+            peep(); // Start moles popping up
+        }
+
+        /**
+         * Ends the game and displays the final score.
+         */
+        function endGame() {
+            gameActive = false;
+            finalScoreDisplay.textContent = `Your Score: ${score}`;
+            gameOverMessage.style.display = 'flex'; // Show game over message
+            startButton.style.display = 'block'; // Show start button again
+            startButton.textContent = 'Play Again'; // Change button text
+
+            // Save high score
+            if (isAuthReady && db) {
+                saveHighScore(score);
+            } else {
+                console.warn("Firestore not ready, high score will not be saved.");
+            }
+        }
+
+        /**
+         * Sets up event listeners for the game.
+         */
+        function setupGame() {
+            createHoles(); // Create holes once on setup
+            // Add click listener to the game grid to handle mole clicks
+            gameGrid.addEventListener('click', whack);
+            startButton.addEventListener('click', startGame);
+            restartButton.addEventListener('click', startGame); // Restart button uses the same startGame function
+        }
+
+        // --- Firestore High Score Logic ---
+
+        /**
+         * Saves the current score as a high score if it's higher than previous.
+         * @param {number} currentScore - The player's score.
+         */
+        async function saveHighScore(currentScore) {
+            if (!isAuthReady || !db || !userId) {
+                console.warn("Firestore not initialized or user not authenticated. Cannot save high score.");
+                return;
+            }
+
+            const highScoresCollectionRef = collection(db, `artifacts/${appId}/public/data/highscores`);
+            const userHighScoreDocRef = doc(highScoresCollectionRef, userId); // Document for this specific user's high score
+
+            try {
+                const docSnap = await getDoc(userHighScoreDocRef);
+                let existingHighScore = 0;
+                if (docSnap.exists()) {
+                    existingHighScore = docSnap.data().score || 0;
+                }
+
+                if (currentScore > existingHighScore) {
+                    await setDoc(userHighScoreDocRef, {
+                        userId: userId,
+                        score: currentScore,
+                        timestamp: new Date().toISOString()
+                    });
+                    console.log("High score updated successfully!");
+                } else {
+                    console.log("Current score is not a new high score for this user.");
+                }
+                fetchHighScores(); // Refresh the list after saving
+            } catch (e) {
+                console.error("Error saving high score: ", e);
+            }
+        }
+
+        /**
+         * Fetches and displays the top high scores from Firestore.
+         */
+        async function fetchHighScores() {
+            if (!isAuthReady || !db) {
+                console.warn("Firestore not initialized. Cannot fetch high scores.");
+                return;
+            }
+
+            const highScoresCollectionRef = collection(db, `artifacts/${appId}/public/data/highscores`);
+            // Note: Firestore does not allow orderBy without an index.
+            // We will fetch all and sort in memory for simplicity.
+            try {
+                const querySnapshot = await getDocs(highScoresCollectionRef);
+                let scores = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    scores.push({ userId: data.userId, score: data.score });
+                });
+
+                // Sort scores in descending order
+                scores.sort((a, b) => b.score - a.score);
+
+                // Display top 5 scores
+                highScoresList.innerHTML = '';
+                if (scores.length === 0) {
+                    highScoresList.innerHTML = '<li>No high scores yet!</li>';
+                } else {
+                    scores.slice(0, 5).forEach((item, index) => {
+                        const listItem = document.createElement('li');
+                        // Truncate userId for display, but show full userId on hover or in a tooltip if needed.
+                        // For this example, we'll show the full userId as per instructions.
+                        listItem.innerHTML = `<span class="name">#${index + 1} Player ${item.userId}</span> <span>${item.score}</span>`;
+                        highScoresList.appendChild(listItem);
+                    });
+                }
+            } catch (e) {
+                console.error("Error fetching high scores: ", e);
+                highScoresList.innerHTML = '<li>Error loading high scores.</li>';
+            }
+        }
+
+        /**
+         * Listens for real-time updates to high scores.
+         */
+        function listenForHighScores() {
+            if (!isAuthReady || !db) {
+                console.warn("Firestore not initialized. Cannot listen for high scores.");
+                return;
+            }
+
+            const highScoresCollectionRef = collection(db, `artifacts/${appId}/public/data/highscores`);
+            onSnapshot(highScoresCollectionRef, (snapshot) => {
+                let scores = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    scores.push({ userId: data.userId, score: data.score });
+                });
+
+                scores.sort((a, b) => b.score - a.score);
+
+                highScoresList.innerHTML = '';
+                if (scores.length === 0) {
+                    highScoresList.innerHTML = '<li>No high scores yet!</li>';
+                } else {
+                    scores.slice(0, 5).forEach((item, index) => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `<span class="name">#${index + 1} Player ${item.userId}</span> <span>${item.score}</span>`;
+                        highScoresList.appendChild(listItem);
+                    });
+                }
+            }, (error) => {
+                console.error("Error listening to high scores:", error);
+                highScoresList.innerHTML = '<li>Error loading high scores.</li>';
+            });
+        }
+
+        // Initialize Firebase and then the game when the window loads
+        window.onload = function () {
+            initializeFirebase();
+        };
+    </script>
+</body>
+</html>
