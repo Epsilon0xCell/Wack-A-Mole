@@ -6,28 +6,30 @@
     <title>Whack-a-Mole</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom CSS for the game elements */
+        /* I style the board, the holes, and the mole by hand here.
+           Tailwind handles utility layout, but it does not know what a
+           mole hole should look like, so these rules are mine. */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f0f0; /* Light grey background */
+            background-color: #f0f0f0;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh; /* Full viewport height */
+            min-height: 100vh;
             margin: 0;
-            overflow: hidden; /* Prevent scrolling */
+            overflow: hidden; /* I lock scrolling on the page. The board has to stay put while I play, and a mole popping up must never shift the page. */
         }
 
         .game-container {
-            background-color: #a0522d; /* Sienna brown for the 'ground' */
-            border-radius: 20px; /* Rounded corners for the game area */
+            background-color: #a0522d; /* I use this brown as dirt. The container is the ground, so every hole sits in it. */
+            border-radius: 20px;
             padding: 20px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Soft shadow */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 90%; /* Responsive width */
-            max-width: 600px; /* Max width for larger screens */
+            width: 90%;
+            max-width: 600px;
             position: relative;
         }
 
@@ -37,54 +39,54 @@
             width: 100%;
             margin-bottom: 20px;
             color: white;
-            font-size: 1.25rem; /* Larger font for info */
+            font-size: 1.25rem;
             font-weight: bold;
         }
 
         .game-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr); /* 3 columns */
-            gap: 15px; /* Space between holes */
+            grid-template-columns: repeat(3, 1fr); /* I start at 3 columns. My queries at the bottom drop this to 2 on narrow screens. The script still builds 9 holes either way, so a narrow screen gets taller rows, not fewer moles. */
+            gap: 15px;
             width: 100%;
         }
 
         .hole {
-            background-color: #5a3e2b; /* Darker brown for holes */
+            background-color: #5a3e2b;
             width: 100%;
-            padding-bottom: 100%; /* Creates a square hole */
-            border-radius: 50%; /* Circular holes */
+            padding-bottom: 100%; /* I force a square with padding, because width alone sets no height. Percent padding is based on width, so the hole stays square when the grid shrinks. */
+            border-radius: 50%; /* I round the square box fully, so it reads as a round hole. */
             position: relative;
-            overflow: hidden; /* Hide mole when it's down */
-            border: 5px solid #8b4513; /* SaddleBrown border */
-            box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.5); /* Inner shadow for depth */
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hammer"><path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0-.83-.83-.83-2.17 0-3L12 9"/><path d="m18 11-1.5-7.5L2 6l1.5 7.5L18 11Z"/><path d="m21 15 1.5 1.5c.83.83.83 2.17 0 3 0 0 0 0 0 0-.83.83-2.17.83-3 0L15 18"/></svg>') 16 16, auto; /* Hammer cursor */
+            overflow: hidden; /* I clip here for a different reason than on the body. This clipping is what hides the mole when it sits below the hole. Without it, the parked mole would show outside the board. */
+            border: 5px solid #8b4513;
+            box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.5);
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hammer"><path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0-.83-.83-.83-2.17 0-3L12 9"/><path d="m18 11-1.5-7.5L2 6l1.5 7.5L18 11Z"/><path d="m21 15 1.5 1.5c.83.83.83 2.17 0 3 0 0 0 0 0 0-.83.83-2.17.83-3 0L15 18"/></svg>') 16 16, auto; /* I use an inline SVG hammer as the cursor, hotspot at 16, 16, the center of the icon. If that data URL ever fails to load, auto is my fallback and the game still plays. */
         }
 
         .mole {
             position: absolute;
-            bottom: -100%; /* Start hidden below the hole */
+            bottom: -100%; /* I park the mole fully below the hole. The up class further down is the only thing that brings it into view. */
             left: 50%;
             transform: translateX(-50%);
-            width: 80%; /* Mole size relative to hole */
+            width: 80%;
             height: 80%;
-            background-color: #8b4513; /* SaddleBrown for mole body */
-            border-radius: 50% 50% 0 0; /* Mole head shape */
-            transition: bottom 0.2s ease-out; /* Smooth pop-up animation */
+            background-color: #8b4513;
+            border-radius: 50% 50% 0 0; /* I round only the top corners, so the mole reads as a head rising out of the ground instead of a full ball. */
+            transition: bottom 0.2s ease-out; /* I animate bottom because bottom is the value the up class changes. If I animated a different property, the mole snaps instead of sliding. */
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: flex-end;
-            font-size: 3rem; /* Emoji size */
+            font-size: 3rem;
             line-height: 1;
-            padding-bottom: 10%; /* Adjust emoji position */
+            padding-bottom: 10%;
         }
 
         .mole.up {
-            bottom: 0; /* Mole pops up */
+            bottom: 0;
         }
 
         .start-button {
-            background-color: #4CAF50; /* Green */
+            background-color: #4CAF50;
             color: white;
             padding: 12px 25px;
             border: none;
@@ -98,12 +100,12 @@
         }
 
         .start-button:hover {
-            background-color: #45a049; /* Darker green on hover */
-            transform: translateY(-2px); /* Slight lift on hover */
+            background-color: #45a049;
+            transform: translateY(-2px);
         }
 
         .start-button:active {
-            transform: translateY(0); /* Press effect */
+            transform: translateY(0);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
@@ -119,7 +121,7 @@
             text-align: center;
             font-size: 2rem;
             font-weight: bold;
-            display: none; /* Hidden by default */
+            display: none;
             z-index: 10;
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
         }
@@ -140,9 +142,9 @@
             background-color: #0056b3;
         }
 
-        /* High Score Board Styling */
+        /* I keep the score board light against the brown board above it, so a player can tell the game area and the records apart at a glance. */
         .high-scores-container {
-            background-color: #f8f8f8; /* Light background for scores */
+            background-color: #f8f8f8;
             border-radius: 15px;
             padding: 20px;
             margin-top: 30px;
@@ -183,7 +185,7 @@
             color: #222;
         }
 
-        /* Loading indicator for Firebase */
+        /* I show this overlay only while Firebase starts up. I set display twice in the rule below on purpose in my first version, and the second value wins, so it starts hidden. My script turns it on by setting display to flex from JavaScript. */
         .loading-indicator {
             position: absolute;
             top: 0;
@@ -198,13 +200,13 @@
             color: #333;
             z-index: 20;
             border-radius: 20px;
-            display: none; /* Hidden by default */
+            display: none;
         }
 
-        /* Responsive adjustments */
+        /* On narrow screens I drop the grid to 2 columns. I do not drop holes. Losing holes would make the game easier on a phone, and I do not want the device to set the difficulty. */
         @media (max-width: 768px) {
             .game-grid {
-                grid-template-columns: repeat(2, 1fr); /* 2 columns on smaller screens */
+                grid-template-columns: repeat(2, 1fr);
             }
             .game-info {
                 font-size: 1rem;
@@ -230,7 +232,7 @@
 
         @media (max-width: 480px) {
             .game-grid {
-                grid-template-columns: repeat(2, 1fr); /* Still 2 columns, but moles might be larger relative to screen */
+                grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
             }
             .hole {
@@ -256,6 +258,7 @@
             <div id="time">Time: 30</div>
         </div>
 
+        <!-- I leave this grid empty on purpose. My script builds the 9 holes, because I need a mole element inside each hole and I do not want to paste that block 9 times. -->
         <div class="game-grid" id="gameGrid">
             </div>
 
@@ -269,6 +272,7 @@
 
         <div class="high-scores-container">
             <h2>High Scores</h2>
+            <!-- I leave this list empty too. My script fills it from Firestore, or with a plain no scores line when there is nothing saved. -->
             <ul class="high-scores-list" id="highScoresList">
                 </ul>
         </div>
@@ -277,12 +281,14 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // Only the Firestore functions this file actually calls are imported.
-        // The first version imported ten and used five; the unused ones still
-        // cost module fetches on every load.
+        // I import only the Firestore functions this file actually calls.
+        // My first version imported ten and used five. The unused ones still
+        // cost module fetches on every load, so I cut them.
         import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global variables for Firebase and game state
+        // I keep the Firebase handles and the game state in module scope.
+        // Every function below shares them, and a game is one round at a
+        // time, so I do not need a class or a state object for this.
         let app;
         let db;
         let auth;
@@ -290,7 +296,7 @@
         let isAuthReady = false;
 
         let score = 0;
-        let time = 30; // Game duration in seconds
+        let time = 30; // I run one round for 30 seconds. startGameTimer resets this, so I must not treat the value here as the start of a later round.
         let gameInterval;
         let lastHole;
         let gameActive = false;
@@ -305,16 +311,24 @@
         const highScoresList = document.getElementById('highScoresList');
         const loadingIndicator = document.getElementById('loadingIndicator');
 
-        // --- Firebase Initialization and Authentication ---
+        // I treat Firebase as optional from the start. If the hosting page
+        // gives me no config, I still run the game. I just do not save scores.
+        // These three values come from the hosting page, not from me. I
+        // check each one with typeof before I read it, because a plain
+        // reference would throw when the host did not define it, and that
+        // throw would kill the whole module before the game is even set up.
+        // My fallbacks are deliberate: a default app id, an empty config,
+        // and no token. An empty config is my signal to skip Firestore.
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        /**
-         * Initializes Firebase and authenticates the user.
-         */
+        // I start Firebase first and I build the game only from inside the
+        // auth callback, or from my no-config paths below. That order
+        // matters. If I built the board before I knew whether I had a
+        // database, the score code would have to guess.
         async function initializeFirebase() {
-            loadingIndicator.style.display = 'flex'; // Show loading indicator
+            loadingIndicator.style.display = 'flex';
             try {
                 if (Object.keys(firebaseConfig).length > 0) {
                     app = initializeApp(firebaseConfig);
@@ -326,7 +340,11 @@
                             userId = user.uid;
                             console.log("Firebase Auth Ready. User ID:", userId);
                         } else {
-                            // If no user, sign in anonymously
+                            // I sign in on my own when there is no user. I try
+                            // a host token first, because the host may already
+                            // know who this player is. I fall back to an
+                            // anonymous account, because a name is not the
+                            // point here. A stable user id is.
                             try {
                                 if (initialAuthToken) {
                                     await signInWithCustomToken(auth, initialAuthToken);
@@ -339,96 +357,101 @@
                                 }
                             } catch (error) {
                                 console.error("Firebase Anonymous Sign-in failed:", error);
-                                // Fallback to a random ID if auth fails completely
+                                // If sign-in fails fully, I use a random id
+                                // for this session. The game still runs. The
+                                // score from this session just has no real
+                                // account behind it.
                                 userId = crypto.randomUUID();
                                 console.log("Using random UUID as userId:", userId);
                             }
                         }
                         isAuthReady = true;
-                        loadingIndicator.style.display = 'none'; // Hide loading indicator
-                        setupGame(); // Setup game after auth is ready
-                        listenForHighScores(); // Start listening for high scores
+                        loadingIndicator.style.display = 'none';
+                        setupGame();
+                        listenForHighScores();
                     });
                 } else {
                     console.warn("Firebase config not provided. Running without Firestore persistence.");
-                    userId = crypto.randomUUID(); // Use a random ID if no Firebase config
+                    userId = crypto.randomUUID();
                     isAuthReady = true;
-                    loadingIndicator.style.display = 'none'; // Hide loading indicator
-                    setupGame(); // Setup game even without Firebase
+                    loadingIndicator.style.display = 'none';
+                    setupGame();
                 }
             } catch (error) {
                 console.error("Error initializing Firebase:", error);
-                userId = crypto.randomUUID(); // Fallback to a random ID if init fails
+                userId = crypto.randomUUID(); // I keep the same fallback here as in the sign-in catch above. Init failing must not stop the game.
                 isAuthReady = true;
-                loadingIndicator.style.display = 'none'; // Hide loading indicator
-                setupGame(); // Setup game even if Firebase init fails
+                loadingIndicator.style.display = 'none';
+                setupGame();
             }
         }
 
-        // --- Game Setup and Logic ---
+        // The game itself does not care where userId came from. It only
+        // needs the board built and gameActive to be honest.
 
-        /**
-         * Creates the mole holes dynamically.
-         */
+        // I build the holes in code. I need a mole inside each hole, and
+        // writing that pair out 9 times in HTML would give me 9 places to
+        // fix when I change one. I clear the grid first, so a second call
+        // rebuilds the board instead of adding a second set of holes.
         function createHoles() {
-            gameGrid.innerHTML = ''; // Clear existing holes
-            for (let i = 0; i < 9; i++) { // Create 9 holes
+            gameGrid.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
                 const holeDiv = document.createElement('div');
                 holeDiv.classList.add('hole');
                 holeDiv.setAttribute('data-index', i);
 
                 const moleDiv = document.createElement('div');
                 moleDiv.classList.add('mole');
-                moleDiv.innerHTML = '🦔'; // Use a hedgehog emoji for the mole
+                moleDiv.innerHTML = '🦔'; // I use a hedgehog, not a mole. I had no mole emoji I liked, and the hedgehog reads well at this size. The class name stayed mole, because the game logic is about the role, not the animal.
                 holeDiv.appendChild(moleDiv);
 
                 gameGrid.appendChild(holeDiv);
             }
         }
 
-        /**
-         * Gets a random time for the mole to appear.
-         * @param {number} min - Minimum time in milliseconds.
-         * @param {number} max - Maximum time in milliseconds.
-         * @returns {number} Random time.
-         */
+        // I draw how long a mole stays up at random, between the two
+        // bounds my caller passes. A fixed time would let a player learn
+        // the rhythm, and I do not want a rhythm to learn.
         function randomTime(min, max) {
             return Math.round(Math.random() * (max - min) + min);
         }
 
-        /**
-         * Gets a random hole element.
-         * @param {HTMLElement[]} holesArray - Array of hole elements.
-         * @returns {HTMLElement} A random hole element.
-         */
+        // I refuse to pick the same hole twice in a row. I do that by
+        // calling myself again when I draw lastHole. With 9 holes, the
+        // next draw almost always differs, so this recursion stays shallow
+        // in practice. With only 1 hole it would never end, and I rely on
+        // createHoles always building 9.
         function randomHole(holesArray) {
             const idx = Math.floor(Math.random() * holesArray.length);
             const hole = holesArray[idx];
             if (hole === lastHole) {
-                return randomHole(holesArray); // Avoid the same hole twice in a row
+                return randomHole(holesArray);
             }
             lastHole = hole;
             return hole;
         }
 
-        /**
-         * Makes a mole pop up from a random hole.
-         */
+        // This is the heart of the game, and the rule I protect is simple:
+        // one chain, and only one chain, calls peep.
         function peep() {
-            if (!gameActive) return; // Stop peeping if game is not active
+            if (!gameActive) return;
 
-            const holesArray = Array.from(document.querySelectorAll('.hole')); // Get current holes
-            const timeToPop = randomTime(500, 1500); // Mole stays up for 0.5 to 1.5 seconds
+            // I query the holes fresh on each peep instead of caching them.
+            // The board can be rebuilt, and a cached list would point at holes
+            // that are no longer on the page.
+            const holesArray = Array.from(document.querySelectorAll('.hole'));
+            const timeToPop = randomTime(500, 1500); // I keep a mole up for half a second to a second and a half. Shorter felt unfair in my testing of the pace, longer felt slow.
             const hole = randomHole(holesArray);
             const mole = hole.querySelector('.mole');
 
             if (mole) {
                 mole.classList.add('up');
-                // There is exactly one peep chain at a time: each peep
-                // schedules the next, and nothing else calls peep. A whack
-                // removes 'up' early but deliberately does not touch this
-                // timer, because cancelling it would end the chain and the
-                // game would stall with no moles at all.
+                // I schedule the next peep from inside this timeout, and
+                // nothing else calls peep. That is what keeps exactly one
+                // chain alive. A whack removes the up class early but I
+                // deliberately do not touch this timer there. If I cleared
+                // it, the chain would die and the game would stall with no
+                // moles at all, while the clock kept running.
                 setTimeout(() => {
                     mole.classList.remove('up');
                     if (gameActive) {
@@ -438,11 +461,11 @@
             }
         }
 
-        /**
-         * Starts the game timer.
-         */
+        // I run the round clock on its own interval, apart from the peep
+        // chain. The two timers must not share a handle. If they did,
+        // stopping one at the end of a round could stop the other early.
         function startGameTimer() {
-            time = 30; // Reset time
+            time = 30;
             timeDisplay.textContent = `Time: ${time}`;
             gameInterval = setInterval(() => {
                 time--;
@@ -454,24 +477,26 @@
             }, 1000);
         }
 
-        /**
-         * Handles a mole being whacked.
-         * @param {Event} e - The click event.
-         */
+        // I listen on the whole grid, not on each mole. The moles are
+        // rebuilt, and one listener on the parent survives a rebuild.
+        // I check two things on the click itself below.
         function whack(e) {
-            if (!e.isTrusted || !gameActive) return; // Prevent cheating and ensure game is active
+            // I reject clicks the browser did not get from a real press.
+            // e.isTrusted is false for clicks a script sends itself, and I
+            // do not want a console line to beat a human score. I also
+            // reject clicks while no round is running.
+            if (!e.isTrusted || !gameActive) return;
             if (e.target.classList.contains('mole') && e.target.classList.contains('up')) {
                 score++;
                 scoreDisplay.textContent = `Score: ${score}`;
-                e.target.classList.remove('up'); // Hide the mole immediately
+                e.target.classList.remove('up'); // I hide the mole at once, so one pop can only score once. Without this, fast clicks on the same mole would keep adding points until its timer ran out.
             }
         }
 
-        /**
-         * Starts the game.
-         */
+        // Both the start button and the play again button call me. I am
+        // the same either way. A new round always starts from score 0.
         function startGame() {
-            if (gameActive) return; // Prevent starting if already active
+            if (gameActive) return; // I ignore a second start while a round runs. Starting twice would start a second clock and a second peep chain.
 
             score = 0;
             scoreDisplay.textContent = `Score: ${score}`;
@@ -480,20 +505,23 @@
             gameActive = true;
 
             startGameTimer();
-            peep(); // Start moles popping up
+            peep();
         }
 
-        /**
-         * Ends the game and displays the final score.
-         */
+        // I do not clear moles that are still up when time runs out. The
+        // board freezes behind the game over panel, and the next start
+        // does not reuse this board state for scoring, because whack
+        // checks gameActive first.
         function endGame() {
             gameActive = false;
             finalScoreDisplay.textContent = `Your Score: ${score}`;
-            gameOverMessage.style.display = 'flex'; // Show game over message
-            startButton.style.display = 'block'; // Show start button again
-            startButton.textContent = 'Play Again'; // Change button text
+            gameOverMessage.style.display = 'flex';
+            startButton.style.display = 'block';
+            startButton.textContent = 'Play Again';
 
-            // Save high score
+            // I save only when I have both auth and a database. In the
+            // no-config case I warn and move on. A round with no saved
+            // score is still a finished round.
             if (isAuthReady && db) {
                 saveHighScore(score);
             } else {
@@ -501,14 +529,14 @@
             }
         }
 
-        /**
-         * Sets up event listeners for the game.
-         */
+        // I attach the listeners here, once, and nowhere else.
         function setupGame() {
-            // onAuthStateChanged fires more than once: when the listener is
-            // attached and again when sign-in completes. Without this guard
-            // the second call stacked a second click listener on the grid,
-            // and every whack scored twice.
+            // My auth listener can call me more than once. It fires when
+            // I attach it and again when sign-in completes. Without this
+            // guard, my second call stacked a second click listener on
+            // the grid, and every whack scored twice. I learned that from
+            // reading the auth flow, and I guard the whole setup, not
+            // just the one listener.
             if (setupDone) return;
             setupDone = true;
             createHoles();
@@ -517,12 +545,12 @@
             restartButton.addEventListener('click', startGame);
         }
 
-        // --- Firestore High Score Logic ---
+        // Scores live in one collection, one document per player, keyed
+        // by userId. I store only the best score for that player.
 
-        /**
-         * Saves the current score as a high score if it's higher than previous.
-         * @param {number} currentScore - The player's score.
-         */
+        // I read before I write. I only write when this round beats the
+        // saved best, because a weaker round should never erase a stronger
+        // one, and a needless write still costs a round trip.
         async function saveHighScore(currentScore) {
             if (!isAuthReady || !db || !userId) {
                 console.warn("Firestore not initialized or user not authenticated. Cannot save high score.");
@@ -530,7 +558,7 @@
             }
 
             const highScoresCollectionRef = collection(db, `artifacts/${appId}/public/data/highscores`);
-            const userHighScoreDocRef = doc(highScoresCollectionRef, userId); // Document for this specific user's high score
+            const userHighScoreDocRef = doc(highScoresCollectionRef, userId);
 
             try {
                 const docSnap = await getDoc(userHighScoreDocRef);
@@ -549,19 +577,25 @@
                 } else {
                     console.log("Current score is not a new high score for this user.");
                 }
-                fetchHighScores(); // Refresh the list after saving
+                // I refresh after a save. The live listener below will
+                // also fire on this write, so the list may draw twice with
+                // the same data. I accept that. Drawing the same list
+                // twice is harmless, and it keeps this path correct even
+                // if the listener is not running.
+                fetchHighScores();
             } catch (e) {
                 console.error("Error saving high score: ", e);
             }
         }
 
-        // The one-shot fetch and the live listener receive the same shape
-        // of data and draw the same list, so the drawing lives here, once.
-        // It used to be two copies; they had already drifted apart (one had
-        // an extra comment block, the other did not), which is how duplicated
-        // rendering code always ends. Rows are built with textContent rather
-        // than innerHTML because a userId comes from the database, and
-        // database content is not markup.
+        // My one-shot fetch and my live listener get the same shape of
+        // data and draw the same list, so I keep the drawing here, once.
+        // I used to have two copies. They had already drifted apart, which
+        // is how copied rendering code always ends.
+        // I sort here, in memory, highest first, and I show only the top
+        // 5. I build each row with textContent, not innerHTML, because a
+        // userId comes from the database, and I do not treat database
+        // content as markup I can trust.
         function renderHighScores(scores) {
             scores.sort((a, b) => b.score - a.score);
             highScoresList.innerHTML = '';
@@ -593,6 +627,8 @@
             return scores;
         }
 
+        // I use this fetch after a save, when I want the list now and I
+        // do not want to wait for the listener to notice the write.
         async function fetchHighScores() {
             if (!isAuthReady || !db) {
                 console.warn("Firestore not initialized. Cannot fetch high scores.");
@@ -600,10 +636,12 @@
             }
 
             const highScoresCollectionRef = collection(db, `artifacts/${appId}/public/data/highscores`);
-            // The whole collection is fetched and sorted in memory instead
-            // of using a Firestore orderBy query, which would need an index
-            // this project does not define. Fine at this scale: one document
-            // per player who has ever finished a game here.
+            // I fetch the whole collection and sort it in memory instead
+            // of using a Firestore orderBy query. That query would need an
+            // index this project does not define. At my scale this is
+            // fine. I hold one document per player who ever finished a
+            // game here. If that count grew large, this is the first
+            // thing I would have to change.
             try {
                 const querySnapshot = await getDocs(highScoresCollectionRef);
                 renderHighScores(scoresFromSnapshot(querySnapshot));
@@ -613,6 +651,9 @@
             }
         }
 
+        // I keep this listener for scores other players post while this
+        // page is open. It shares renderHighScores with the fetch above,
+        // so both paths always agree on how the board looks.
         function listenForHighScores() {
             if (!isAuthReady || !db) {
                 console.warn("Firestore not initialized. Cannot listen for high scores.");
@@ -628,7 +669,10 @@
             });
         }
 
-        // Initialize Firebase and then the game when the window loads
+        // I wait for the window load event before I start any of this.
+        // My element lookups at the top of this module run when the module
+        // loads, and the board build runs from here, so the page has to
+        // be complete before Firebase and setup begin.
         window.onload = function () {
             initializeFirebase();
         };
