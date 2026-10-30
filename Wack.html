@@ -277,7 +277,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // Only the Firestore functions this file actually calls are imported.
+        // The first version imported ten and used five; the unused ones still
+        // cost module fetches on every load.
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global variables for Firebase and game state
         let app;
@@ -289,10 +292,9 @@
         let score = 0;
         let time = 30; // Game duration in seconds
         let gameInterval;
-        let molePopInterval;
         let lastHole;
         let gameActive = false;
-        const holes = document.querySelectorAll('.hole');
+        let setupDone = false;
         const scoreDisplay = document.getElementById('score');
         const timeDisplay = document.getElementById('time');
         const startButton = document.getElementById('startButton');
@@ -422,10 +424,15 @@
 
             if (mole) {
                 mole.classList.add('up');
+                // There is exactly one peep chain at a time: each peep
+                // schedules the next, and nothing else calls peep. A whack
+                // removes 'up' early but deliberately does not touch this
+                // timer, because cancelling it would end the chain and the
+                // game would stall with no moles at all.
                 setTimeout(() => {
                     mole.classList.remove('up');
                     if (gameActive) {
-                        peep(); // Continue peeping if game is active
+                        peep();
                     }
                 }, timeToPop);
             }
@@ -442,7 +449,6 @@
                 timeDisplay.textContent = `Time: ${time}`;
                 if (time <= 0) {
                     clearInterval(gameInterval);
-                    clearInterval(molePopInterval);
                     endGame();
                 }
             }, 1000);
@@ -499,11 +505,16 @@
          * Sets up event listeners for the game.
          */
         function setupGame() {
-            createHoles(); // Create holes once on setup
-            // Add click listener to the game grid to handle mole clicks
+            // onAuthStateChanged fires more than once: when the listener is
+            // attached and again when sign-in completes. Without this guard
+            // the second call stacked a second click listener on the grid,
+            // and every whack scored twice.
+            if (setupDone) return;
+            setupDone = true;
+            createHoles();
             gameGrid.addEventListener('click', whack);
             startButton.addEventListener('click', startGame);
-            restartButton.addEventListener('click', startGame); // Restart button uses the same startGame function
+            restartButton.addEventListener('click', startGame);
         }
 
         // --- Firestore High Score Logic ---
@@ -544,9 +555,44 @@
             }
         }
 
-        /**
-         * Fetches and displays the top high scores from Firestore.
-         */
+        // The one-shot fetch and the live listener receive the same shape
+        // of data and draw the same list, so the drawing lives here, once.
+        // It used to be two copies; they had already drifted apart (one had
+        // an extra comment block, the other did not), which is how duplicated
+        // rendering code always ends. Rows are built with textContent rather
+        // than innerHTML because a userId comes from the database, and
+        // database content is not markup.
+        function renderHighScores(scores) {
+            scores.sort((a, b) => b.score - a.score);
+            highScoresList.innerHTML = '';
+            if (scores.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'No high scores yet!';
+                highScoresList.appendChild(li);
+                return;
+            }
+            scores.slice(0, 5).forEach((item, index) => {
+                const listItem = document.createElement('li');
+                const name = document.createElement('span');
+                name.className = 'name';
+                name.textContent = `#${index + 1} Player ${item.userId}`;
+                const value = document.createElement('span');
+                value.textContent = item.score;
+                listItem.appendChild(name);
+                listItem.appendChild(value);
+                highScoresList.appendChild(listItem);
+            });
+        }
+
+        function scoresFromSnapshot(snapshot) {
+            const scores = [];
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                scores.push({ userId: data.userId, score: data.score });
+            });
+            return scores;
+        }
+
         async function fetchHighScores() {
             if (!isAuthReady || !db) {
                 console.warn("Firestore not initialized. Cannot fetch high scores.");
@@ -554,41 +600,19 @@
             }
 
             const highScoresCollectionRef = collection(db, `artifacts/${appId}/public/data/highscores`);
-            // Note: Firestore does not allow orderBy without an index.
-            // We will fetch all and sort in memory for simplicity.
+            // The whole collection is fetched and sorted in memory instead
+            // of using a Firestore orderBy query, which would need an index
+            // this project does not define. Fine at this scale: one document
+            // per player who has ever finished a game here.
             try {
                 const querySnapshot = await getDocs(highScoresCollectionRef);
-                let scores = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    scores.push({ userId: data.userId, score: data.score });
-                });
-
-                // Sort scores in descending order
-                scores.sort((a, b) => b.score - a.score);
-
-                // Display top 5 scores
-                highScoresList.innerHTML = '';
-                if (scores.length === 0) {
-                    highScoresList.innerHTML = '<li>No high scores yet!</li>';
-                } else {
-                    scores.slice(0, 5).forEach((item, index) => {
-                        const listItem = document.createElement('li');
-                        // Truncate userId for display, but show full userId on hover or in a tooltip if needed.
-                        // For this example, we'll show the full userId as per instructions.
-                        listItem.innerHTML = `<span class="name">#${index + 1} Player ${item.userId}</span> <span>${item.score}</span>`;
-                        highScoresList.appendChild(listItem);
-                    });
-                }
+                renderHighScores(scoresFromSnapshot(querySnapshot));
             } catch (e) {
                 console.error("Error fetching high scores: ", e);
                 highScoresList.innerHTML = '<li>Error loading high scores.</li>';
             }
         }
 
-        /**
-         * Listens for real-time updates to high scores.
-         */
         function listenForHighScores() {
             if (!isAuthReady || !db) {
                 console.warn("Firestore not initialized. Cannot listen for high scores.");
@@ -597,24 +621,7 @@
 
             const highScoresCollectionRef = collection(db, `artifacts/${appId}/public/data/highscores`);
             onSnapshot(highScoresCollectionRef, (snapshot) => {
-                let scores = [];
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    scores.push({ userId: data.userId, score: data.score });
-                });
-
-                scores.sort((a, b) => b.score - a.score);
-
-                highScoresList.innerHTML = '';
-                if (scores.length === 0) {
-                    highScoresList.innerHTML = '<li>No high scores yet!</li>';
-                } else {
-                    scores.slice(0, 5).forEach((item, index) => {
-                        const listItem = document.createElement('li');
-                        listItem.innerHTML = `<span class="name">#${index + 1} Player ${item.userId}</span> <span>${item.score}</span>`;
-                        highScoresList.appendChild(listItem);
-                    });
-                }
+                renderHighScores(scoresFromSnapshot(snapshot));
             }, (error) => {
                 console.error("Error listening to high scores:", error);
                 highScoresList.innerHTML = '<li>Error loading high scores.</li>';
