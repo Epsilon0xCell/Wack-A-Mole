@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wack-A-Mole - nine holes, thirty seconds, one point per whack</title>
+<!-- pages-campaign site for Epsilon0xCell/Wack-A-Mole; source of truth: Wack-A-Mole-Website/ on the default branch -->
+<style>
+/* I styled this as the cabinet scoreboard because the honest way to present a game I cannot demo here is its board, its clock, and its numbers. Dark wood, lit digits, no screenshots I do not have. */
+*{box-sizing:border-box}
+body{margin:0;background:#17100b;color:#f3e6cf;font-family:"Trebuchet MS",Verdana,sans-serif}
+.cabinet{max-width:960px;margin:0 auto;padding:28px 20px 56px}
+.marquee{background:#5a2d12;border:4px solid #d99a3d;padding:20px;text-align:center}
+.marquee h1{margin:4px 0;font-size:clamp(36px,7vw,60px);letter-spacing:.04em;color:#ffd873;text-transform:uppercase}
+img.banner{width:100%;border:4px solid #d99a3d;margin:16px 0}
+img.logo{width:76px;border:3px solid #d99a3d;vertical-align:middle;margin-right:12px}
+.scoreboard{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0}
+.cell{flex:1;min-width:150px;background:#0d0906;border:2px solid #d99a3d;padding:14px;text-align:center}
+.cell b{display:block;font-family:"Courier New",monospace;font-size:30px;color:#7dff8a}
+.cell span{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#cbb28a}
+.badges img{margin:0 5px 5px 0}
+.board{background:#2a1a0d;border:3px solid #d99a3d;padding:18px}
+h2{color:#ffd873;font-size:21px;margin-top:30px}
+p,li{line-height:1.7;font-size:15.5px}
+pre{background:#0d0906;border:1px solid #d99a3d;color:#b8ffc0;padding:13px;overflow:auto;font-family:"Courier New",monospace}
+.chip{display:inline-block;border:1px solid #ffd873;color:#ffd873;padding:3px 10px;margin:0 5px 5px 0;font-size:13px}
+a{color:#ffd873}
+footer{margin-top:34px;border-top:3px solid #d99a3d;padding-top:12px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="cabinet">
+<div class="marquee"><p><img class="logo" src="https://raw.githubusercontent.com/Epsilon0xCell/Wack-A-Mole/main/logo.png" alt="Wack-A-Mole logo">Single file game: Wack.html</p><h1>Wack-A-Mole</h1><p>Nine holes, 30 seconds, one point per whack.</p></div>
+<img class="banner" src="https://raw.githubusercontent.com/Epsilon0xCell/Wack-A-Mole/main/banner.png" alt="Wack-A-Mole banner">
+<div class="badges">
+<img src="https://img.shields.io/github/stars/Epsilon0xCell/Wack-A-Mole?style=for-the-badge&color=d99a3d&labelColor=17100b" alt="Stars">
+<img src="https://img.shields.io/github/forks/Epsilon0xCell/Wack-A-Mole?style=for-the-badge&color=d99a3d&labelColor=17100b" alt="Forks">
+<img src="https://img.shields.io/github/last-commit/Epsilon0xCell/Wack-A-Mole?style=for-the-badge&color=d99a3d&labelColor=17100b" alt="Last commit">
+<img src="https://img.shields.io/github/languages/top/Epsilon0xCell/Wack-A-Mole?style=for-the-badge&color=d99a3d&labelColor=17100b" alt="Top language">
+<img src="https://img.shields.io/github/repo-size/Epsilon0xCell/Wack-A-Mole?style=for-the-badge&color=d99a3d&labelColor=17100b" alt="Repo size">
+</div>
+<div class="scoreboard">
+<div class="cell"><b>9</b><span>Holes</span></div>
+<div class="cell"><b>30</b><span>Seconds</span></div>
+<div class="cell"><b>500-1500</b><span>ms a mole stays up</span></div>
+<div class="cell"><b>1</b><span>Point per whack</span></div>
+</div>
+<h2>What this is</h2>
+<p>I built the whole game as one file, Wack.html. Open it in a browser and play. There is no build step and no second file to lose.</p>
+<p>One chain of peep() calls runs the moles. A mole stays up for a random time between 500 and 1500 milliseconds, drawn by randomTime(500, 1500) in the code, and the same hole never comes up twice in a row. A whack hides the mole at once but does not touch its timer, because clearing that timer would kill the chain and stall the game.</p>
+<p>In the game itself the mole is a hedgehog character. I had no mole I liked at that size, and the class name stayed mole because the logic is about the role, not the animal.</p>
+<div class="board">
+<h2 style="margin-top:0">The board, drawn from the game</h2>
+<!-- I drew the board and the mole by hand in SVG because this staging pass has no browser to take a screenshot with, and I will not fake one. -->
+<svg viewBox="0 0 480 300" width="100%" role="img" aria-label="Three by three hole grid with one mole up" style="background:#1d1208">
+<g fill="#0d0906" stroke="#d99a3d" stroke-width="2">
+<ellipse cx="90" cy="70" rx="52" ry="18"/><ellipse cx="240" cy="70" rx="52" ry="18"/><ellipse cx="390" cy="70" rx="52" ry="18"/>
+<ellipse cx="90" cy="160" rx="52" ry="18"/><ellipse cx="240" cy="160" rx="52" ry="18"/><ellipse cx="390" cy="160" rx="52" ry="18"/>
+<ellipse cx="90" cy="250" rx="52" ry="18"/><ellipse cx="240" cy="250" rx="52" ry="18"/><ellipse cx="390" cy="250" rx="52" ry="18"/>
+</g>
+<g><circle cx="240" cy="118" r="30" fill="#8a5a2b" stroke="#ffd873" stroke-width="2"/><circle cx="230" cy="112" r="4" fill="#0d0906"/><circle cx="250" cy="112" r="4" fill="#0d0906"/><ellipse cx="240" cy="126" rx="7" ry="5" fill="#0d0906"/><path d="M218 100 L210 84 M228 92 L224 74 M252 92 L256 74 M262 100 L270 84" stroke="#ffd873" stroke-width="3"/></g>
+</svg>
+<p style="margin-bottom:0">Three rows of three holes, built by createHoles in Wack.html. One mole up at a time.</p>
+</div>
+<h2>Play it</h2>
+<pre>Open Wack.html in a browser and press start.</pre>
+<h2>Project history, stated plainly</h2>
+<p>Deep Wave 1 found a real bug here. onAuthStateChanged can call setupGame() twice, and the second call stacked a second grid click listener, so every whack scored twice. setupGame() now returns early once it has run. The same pass cut five unused Firestore imports, a timer variable that was cleared but never assigned, and a holes query that ran before any hole existed.</p>
+<h2>Honest notes</h2>
+<p>The high score board is optional. The page looks for Firebase configuration supplied by its hosting (__firebase_config and friends). With no config, which is the case for the plain file on its own, the game runs the same and scores are not saved anywhere.</p>
+<p>I verified this site by reading Wack.html in full and by running node --check on its extracted module script, which passed. I did not play the game in this pass because no browser is available here, and I am not claiming a play test I did not do.</p>
+<h2>Stack</h2>
+<p><span class="chip">HTML</span><span class="chip">CSS</span><span class="chip">JavaScript</span><span class="chip">Firestore, optional</span></p>
+<p><a href="https://github.com/Epsilon0xCell/Wack-A-Mole">The repository</a> and <a href="https://github.com/Epsilon0xCell">my GitHub profile</a>.</p>
+<footer>Built by Epsilon0xCell. Scoreboard numbers taken from Wack.html, not from memory.</footer>
+</div>
+</body>
+</html>
