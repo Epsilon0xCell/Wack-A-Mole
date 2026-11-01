@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" role="img" aria-label="The cupping table from above: steam curling over the bowls, a spoon gliding bowl to bowl, and tweezers lifting one pale bean at a time to the rejected pile">
+<rect width="1200" height="420" fill="#5a3a22"/>
+<rect x="60" y="46" width="1080" height="150" fill="#8a5c30"/>
+<g fill="#faf9f6" stroke="#b4b2aa" stroke-width="3">
+<ellipse cx="170" cy="120" rx="78" ry="36"/><ellipse cx="360" cy="120" rx="78" ry="36"/><ellipse cx="550" cy="120" rx="78" ry="36"/><ellipse cx="740" cy="120" rx="78" ry="36"/><ellipse cx="930" cy="120" rx="78" ry="36"/>
+</g>
+<g fill="#6e4a24"><ellipse cx="170" cy="120" rx="58" ry="25"/><ellipse cx="360" cy="120" rx="58" ry="25"/><ellipse cx="550" cy="120" rx="58" ry="25"/><ellipse cx="740" cy="120" rx="58" ry="25"/><ellipse cx="930" cy="120" rx="58" ry="25"/></g>
+<g fill="none" stroke="#ffffff" stroke-width="4" opacity="0.65">
+<path d="M140,84 q12,-22 0,-40 q-10,-16 2,-32"><animate attributeName="opacity" values="0.65;0.15;0.65" dur="7s" repeatCount="indefinite"/></path>
+<path d="M520,84 q12,-22 0,-40 q-10,-16 2,-32"><animate attributeName="opacity" values="0.15;0.65;0.15" dur="9s" repeatCount="indefinite"/></path>
+<path d="M900,84 q12,-22 0,-40 q-10,-16 2,-32"><animate attributeName="opacity" values="0.65;0.2;0.65" dur="8s" begin="2s" repeatCount="indefinite"/></path>
+</g>
+<g>
+<animateTransform attributeName="transform" type="translate" values="0 0; 190 0; 190 0; 380 0; 380 0; 570 0; 570 0; 760 0; 760 0; 0 0" keyTimes="0;0.16;0.28;0.4;0.52;0.64;0.76;0.88;0.94;1" dur="24s" repeatCount="indefinite"/>
+<g><animateTransform attributeName="transform" type="translate" values="0 0; 0 10; 0 0" dur="24s" keyTimes="0;0.08;0.16" repeatCount="indefinite"/>
+<line x1="120" y1="66" x2="196" y2="96" stroke="#c6cad0" stroke-width="9"/>
+<ellipse cx="112" cy="62" rx="34" ry="16" fill="#d6dade" stroke="#8f959c" stroke-width="3"/></g>
+</g>
+<rect x="60" y="240" width="820" height="140" fill="#a06a34" stroke="#402a16" stroke-width="4"/>
+<g fill="#a86a34" stroke="#6e4420" stroke-width="2">
+<ellipse cx="140" cy="290" rx="20" ry="13"/><ellipse cx="200" cy="330" rx="20" ry="13"/><ellipse cx="280" cy="286" rx="20" ry="13"/><ellipse cx="350" cy="336" rx="20" ry="13"/><ellipse cx="430" cy="292" rx="20" ry="13"/><ellipse cx="510" cy="330" rx="20" ry="13"/><ellipse cx="590" cy="288" rx="20" ry="13"/><ellipse cx="670" cy="334" rx="20" ry="13"/><ellipse cx="750" cy="292" rx="20" ry="13"/><ellipse cx="820" cy="336" rx="20" ry="13"/>
+</g>
+<g>
+<animateTransform attributeName="transform" type="translate" values="0 0; -60 -6; -290 -96; -290 -96; 0 0" keyTimes="0;0.3;0.62;0.85;1" dur="12s" repeatCount="indefinite"/>
+<ellipse cx="470" cy="310" rx="21" ry="14" fill="#e2d0ac" stroke="#b29e7a" stroke-width="2"/>
+</g>
+<g stroke="#c6cad0" stroke-width="5" fill="none">
+<path d="M448,196 L462,292"/><path d="M492,196 L478,292"/>
+</g>
+<g fill="#a86a34" stroke="#6e4420" stroke-width="2">
+<ellipse cx="1000" cy="330" rx="20" ry="13"/>
+<ellipse cx="1030" cy="306" rx="20" ry="13"><animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.6;0.65;1" dur="12s" repeatCount="indefinite"/></ellipse>
+<ellipse cx="972" cy="304" rx="20" ry="13"><animate attributeName="opacity" values="0;0;0;1" keyTimes="0;0.6;0.9;0.95" dur="24s" repeatCount="indefinite"/></ellipse>
+</g>
+</svg>
