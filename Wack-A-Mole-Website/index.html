@@ -3,57 +3,65 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wack-A-Mole: The Defect Chart</title>
-<meta name="description" content="Wack-A-Mole is a single file game. Open Wack.html in a browser and play: nine holes, 30 seconds, one point per hit.">
+<title>Wack-A-Mole: The Fairground Stall</title>
+<meta name="description" content="Wack-A-Mole is a single file game. Open Wack.html in a browser and play: nine holes, 30 seconds, one point per whack.">
 <style>
-@font-face{font-family:'Arima';src:url('fonts/Arima.ttf') format('truetype');}
-@font-face{font-family:'Barlow';src:url('fonts/Barlow.ttf') format('truetype');}
-:root{--parch:#f1e6cf;--walnut:#5a3a22;--honey:#d9a441;--amber:#b2762c;--silver:#c9cdd2;--red:#b3312a}
-*{box-sizing:border-box} body{margin:0;background:#e9dfc8;color:var(--walnut);font-family:'Barlow',sans-serif;line-height:1.6}
-h1,h2{font-family:'Arima',serif}
-.hero{padding:2rem 6vw 1rem;max-width:1150px;margin:0 auto}.hero img.banner{width:100%;height:auto}
-.logo{width:96px;height:96px}
+@font-face{font-family:'Fascinate';src:url('fonts/Fascinate-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:'Mitr';src:url('fonts/Mitr-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:'Mitr';src:url('fonts/Mitr-500.woff2') format('woff2');font-weight:500}
+@font-face{font-family:'Mitr';src:url('fonts/Mitr-600.woff2') format('woff2');font-weight:600}
+:root{--red:#b02a20;--reddeep:#7e1a12;--turf:#1e6b3c;--turfdeep:#0f3d21;--gold:#d9a441;--cream:#fdf6e3;--wood:#7a4a21;--ink:#2b1c10}
+*{box-sizing:border-box} body{margin:0;background:var(--turfdeep);color:var(--ink);font-family:'Mitr',sans-serif;line-height:1.6}
+h1,h2{font-family:'Fascinate',cursive;font-weight:400}
+.hero{padding:2.4rem 6vw 1.2rem;max-width:1150px;margin:0 auto;color:var(--cream);text-align:center}
+.hero img.banner{width:100%;height:auto;border:6px solid var(--red);border-radius:10px;box-shadow:0 14px 34px rgba(0,0,0,.5)}
+.logo{width:104px;height:104px;border-radius:50%;border:4px solid var(--gold)}
+.hero h1{font-size:3.1rem;margin:.6rem 0 .2rem;color:var(--cream)}
+.hero p{max-width:44rem;margin:.6rem auto}
+.ribbons{display:flex;gap:.5rem;justify-content:center;margin:.9rem 0 .2rem}
+.ribbons span{width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:20px solid var(--gold)}
 main{padding:0 6vw 3rem;max-width:1150px;margin:0 auto}
-.chart{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0;background:var(--parch);border:3px solid var(--walnut)}
-.col{padding:1.2rem 1.4rem;border-right:3px double var(--walnut)}
-.col:last-child{border-right:none}
-.col h2{border-bottom:6px double var(--walnut);padding-bottom:.3rem}
-.btn{display:inline-block;background:var(--silver);color:var(--walnut);font-family:'Arima',serif;text-decoration:none;padding:.5rem 1.3rem;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;border:2px solid #8f959c;margin:.3rem .3rem .3rem 0;transition:transform .15s}
-.btn:hover{transform:rotate(-3deg)} .btn:active{transform:translateY(3px)} .btn:focus-visible{outline:3px solid var(--honey);outline-offset:3px}
-a{color:var(--amber)} a::before{content:'';display:inline-block;width:.62em;height:.5em;border:2px solid var(--amber);border-radius:50%;margin-right:.35em;transition:transform .2s}
-a:hover::before{transform:scaleX(1.35)} .btn::before{content:none}
-.rule{border-top:5px double var(--walnut);margin:2rem 0 0}
-.bag{background:#efe3c4;border:1px solid var(--walnut);padding:.7rem 1rem;position:relative;margin-top:1rem}
-.bag::after{content:'';position:absolute;top:8px;right:10px;width:14px;height:14px;border-radius:50%;background:var(--honey);border:2px solid #a8762c}
-footer{padding:2rem 6vw}
+.board{background:var(--turf);border:5px solid var(--reddeep);border-radius:14px;padding:1.6rem;margin:1.8rem 0;box-shadow:0 12px 26px rgba(0,0,0,.4)}
+.bays{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.4rem}
+.bay{background:var(--cream);border-radius:10px;padding:1.2rem 1.4rem 1.4rem;position:relative}
+.bay h2{font-size:1.6rem;margin:.2rem 0 .6rem;padding-top:1.6rem}
+.bay::before{content:'';position:absolute;top:14px;left:50%;transform:translateX(-50%);width:34px;height:34px;border-radius:50%;background:var(--turfdeep);border:6px solid var(--red)}
+.btn{display:inline-block;background:var(--wood);color:var(--cream);font-family:'Fascinate',cursive;text-decoration:none;padding:.55rem 1.35rem;border-radius:8px;border:2px solid #5d3715;box-shadow:0 4px 0 #5d3715;margin:.3rem .35rem .3rem 0;transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:rotate(-2deg)} .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #5d3715} .btn:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+a{color:var(--red)} .btn{color:var(--cream)} .btn::before{content:none}
+.ticket{background:#f7ead0;border:1px dashed var(--wood);padding:.7rem 1rem;margin-top:1rem;position:relative}
+.ticket::after{content:'';position:absolute;top:8px;right:10px;width:14px;height:14px;border-radius:50%;background:var(--gold);border:2px solid #a8762c}
+footer{padding:2rem 6vw;color:var(--cream);background:#081f10}
 .small{font-size:.92rem}
 </style>
 </head>
 <body>
 <header class="hero">
-<img class="logo" src="assets/logo.png" alt="Cupping spoon holding a bean marked with a red cross">
-<img class="banner" src="assets/banner.png" alt="Cupping table with the defect chart headed Wack-A-Mole">
+<img class="logo" src="assets/logo.png" alt="A plush brown mole popping out of a red rimmed hole with a wooden mallet raised above it">
+<img class="banner" src="assets/banner.png" alt="A fairground whack game board with nine red rimmed holes, two moles up and a mallet mid swing">
 <h1>Wack-A-Mole</h1>
-<p>The defect chart pinned above the cupping table, graded column by column.</p>
-<p><a class="btn" href="https://github.com/Epsilon0xCell/Wack-A-Mole">Open the repo</a> <a class="btn" href="#scores">The score board entry</a></p>
+<div class="ribbons"><span></span><span></span><span></span><span></span><span></span></div>
+<p>One HTML file is the whole stall: open it, and the game is already running its nine holes.</p>
+<p><a class="btn" href="https://github.com/Epsilon0xCell/Wack-A-Mole">Open the repo</a> <a class="btn" href="#scores">The high score board</a></p>
 </header>
 <main>
-<div class="chart">
-<section class="col"><h2>Column one: how to play</h2>
+<div class="board">
+<div class="bays">
+<section class="bay"><h2>Bay one: how to play</h2>
 <p>Open <code>Wack.html</code> in a browser and play: that single file is the whole game. Nine holes are built by the script in a three by three grid, two columns on narrow screens but still nine holes, so a phone does not get an easier game. A round lasts 30 seconds, each successful hit scores one point, and the creature stays up for a random time between half a second and a second and a half. The cursor over the board is a small hammer.</p>
 <p class="small">A note the code itself makes: the animal shown is a hedgehog, chosen because it reads well at that size, while the class name in the code stayed mole because the logic is about the role, not the animal.</p>
 </section>
-<section class="col"><h2>Column two: rules a player cannot see</h2>
+<section class="bay"><h2>Bay two: rules a player cannot see</h2>
 <p>The same hole is never picked twice in a row. Only one chain of appearances runs at a time, so the pace cannot double up. A hit hides the creature at once, so one appearance can only score once, and clicks sent by a script do not count, because the game checks that the click came from a real press. Pressing start during a round does nothing. When time ends the board freezes behind the final score panel, and Play Again starts again from zero.</p>
-<div class="bag"><p>Sample bag label: scripted clicks are refused. The game checks that each click came from a real press.</p></div>
+<div class="ticket"><p>Prize ticket: scripted clicks are refused. The game checks that each click came from a real press.</p></div>
 </section>
-<section class="col" id="scores"><h2>Column three: the high score entry</h2>
+<section class="bay" id="scores"><h2>Bay three: the high score board</h2>
 <p>The board is optional. The page looks for Firebase configuration supplied by its hosting environment, including a global config value and related settings. When that configuration exists and sign in and the database are ready, the game saves only the best score for each player, one record per player, and a weaker round never overwrites a stronger one. When no configuration is present, which is the case for the plain file opened on its own, the game plays identically and scores are saved nowhere.</p>
-<div class="bag"><p>Sample bag label: no configuration, no saved scores. The round itself plays the same either way.</p></div>
+<div class="ticket"><p>Prize ticket: no configuration, no saved scores. The round itself plays the same either way.</p></div>
 </section>
 </div>
-<div class="rule"></div>
+</div>
 </main>
-<footer><p>Licence: MIT. Tray sorted, rejected pile counted, spoons washed and laid in a line.</p></footer>
+<footer><p>Licence: MIT. Nine holes, thirty seconds, one point a whack, and the mallet is already raised.</p></footer>
 </body>
 </html>

@@ -1,8 +1,10 @@
-![Intro scenery: a tray of roasted beans with one pale fault and tweezers descending](intro-banner.png)
+![Intro scenery: the wooden mallet landed at the left of the green fairground board as one plush mole drops flat back into its hole in the foreground and the next mole just begins to rise two holes away, gold prize ribbons hanging at the stall posts](intro-banner.png)
 
 # Wack-A-Mole
 
-![Wordmark banner: the defect chart on the cupping room wall headed Wack-A-Mole](banner.png)
+![Wordmark banner: a fairground whack game board with nine green holes rimmed in red, two plush brown moles up and the rest down, a wooden mallet caught mid swing over the board and gold prize ribbons hanging at the stall posts](banner.png)
+
+<p align="center"><img src="logo.png" alt="Wack-A-Mole logo: one round brown plush mole popping out of a red rimmed hole in a green fairground game board, its paws on the rim and a wooden mallet raised above it" width="200"></p>
 
 ![Animated scene: steam over the bowls, a spoon gliding bowl to bowl, one pale bean lifted to the rejected pile](scene.svg)
 
