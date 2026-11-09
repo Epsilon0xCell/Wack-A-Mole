@@ -16,7 +16,7 @@ random, between half a second and a second and a half up at a time.
 
 ![Separator](sep-light.svg)
 
-> **Sample bag label:** the animal shown is a hedgehog, chosen because it reads well at that size, while the class name in the code stayed mole. Scripted clicks are refused, because the game checks that each click came from a real press.
+> The animal shown is a hedgehog, chosen because it reads well at that size, while the class name in the code stayed mole. Scripted clicks are refused, because the game checks that each click came from a real press.
 
 The high score board is optional. The page looks for Firebase
 configuration supplied by its hosting environment (`__firebase_config`
@@ -26,4 +26,4 @@ anywhere.
 
 ![Separator](sep-heavy.svg)
 
-> **Sample bag label:** the score board is conditional. Scores are saved only when Firebase configuration, sign in, and the database are all present, and only the best score per player is kept.
+> The score board is conditional. Scores are saved only when Firebase configuration, sign in, and the database are all present, and only the best score per player is kept.
